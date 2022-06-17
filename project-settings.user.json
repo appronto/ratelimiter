@@ -1,0 +1,23 @@
+{
+  "serializationVersion": 2,
+  "settingsParts": [
+    {
+      "suppressions": [
+        {
+          "moduleID": "812eb09e-b48b-4049-a01c-689150f70a44",
+          "documentID": null,
+          "errorCodeFilter": "CW0055"
+        }
+      ],
+      "suppressAppStoreWarnings": false,
+      "showSuppressionInfo": false,
+      "type": "Mendix.Modeler.Suppressions.SuppressionRules, Mendix.Modeler.Core, Version=8.18.18.0, Culture=neutral, PublicKeyToken=null"
+    },
+    {
+      "suppressions": [],
+      "disabledBestPractices": [],
+      "readRecommendations": [],
+      "type": "Mendix.Modeler.MxAssist.PerformanceBot.Serialization.Configuration.PerformanceBotConfiguration, Mendix.Modeler.MxAssist.PerformanceBot.Serialization, Version=8.18.18.45652, Culture=neutral, PublicKeyToken=null"
+    }
+  ]
+}
