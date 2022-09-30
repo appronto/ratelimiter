@@ -18,21 +18,30 @@ import com.mendix.webui.CustomJavaAction;
 import ratelimiter.helper.RateLimiterHelper;
 
 /**
- * Limits the amount of microflow calls within a period of time per second. The constant RateLimit needs to be set to the desired limit. Cannot be run in a TaskQueue (Mx9) directly. Create a microflow that runs in a Task Queue and call this Java action :)
- * Returns a object
+ * Limits the number of microflow calls within a period of time per second. 
+ * 
+ * - The limit can be set by a Decimal per second by the constant RateLimit  or as a parameter of this action
+ * 
+ * - If the RatelimitQueueName is provided it works as a pool. In this case, you can manage multiple ratelimits
+ * 
+ * - Cannot be run in a TaskQueue (Mx9) directly. Create a microflow that runs in a Task Queue and call this Java action :)
+ * 
+ * - Returns an object
  */
 public class JA_ExecuteWithRateLimit extends CustomJavaAction<IMendixObject>
 {
 	private java.lang.String microflowToExecute;
 	private IMendixObject microflowParameter;
+	private java.lang.String ratelimitQueueName;
 	private java.math.BigDecimal limitSize;
 	private java.lang.String microflowReturnType;
 
-	public JA_ExecuteWithRateLimit(IContext context, java.lang.String microflowToExecute, IMendixObject microflowParameter, java.math.BigDecimal limitSize, java.lang.String microflowReturnType)
+	public JA_ExecuteWithRateLimit(IContext context, java.lang.String microflowToExecute, IMendixObject microflowParameter, java.lang.String ratelimitQueueName, java.math.BigDecimal limitSize, java.lang.String microflowReturnType)
 	{
 		super(context);
 		this.microflowToExecute = microflowToExecute;
 		this.microflowParameter = microflowParameter;
+		this.ratelimitQueueName = ratelimitQueueName;
 		this.limitSize = limitSize;
 		this.microflowReturnType = microflowReturnType;
 	}
@@ -41,8 +50,8 @@ public class JA_ExecuteWithRateLimit extends CustomJavaAction<IMendixObject>
 	public IMendixObject executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-		RateLimiterHelper.getLimiter(limitSize).acquire(1);
-		
+		RateLimiterHelper.RateLimiter(limitSize, ratelimitQueueName).acquire(1);
+				
 		if(Core.getReturnType(microflowToExecute).getObjectType() != null && !Core.getReturnType(microflowToExecute).getObjectType().equals(microflowReturnType) ) {
 			throw new IllegalArgumentException(Core.getReturnType(microflowToExecute).getObjectType() + " return expected. "+ microflowReturnType + " was given"); 
 		}
@@ -60,7 +69,7 @@ public class JA_ExecuteWithRateLimit extends CustomJavaAction<IMendixObject>
 		}
 		
 		//execute microflow
-		RateLimiterHelper.log.debug("start to execute "+ microflowToExecute +" with "+ (limitSize != null ? limitSize.toString() : ratelimiter.proxies.constants.Constants.getRateLimit().toString()) +" per sec");
+		RateLimiterHelper.log.debug("start to execute "+ microflowToExecute + (ratelimitQueueName != null ? "with queue: "+ratelimitQueueName :"") +" with "+ (limitSize != null ? limitSize.toString() : ratelimiter.proxies.constants.Constants.getRateLimit().toString()) +" per sec");
 
 		return Core.microflowCall(microflowToExecute)
 				.inTransaction(true)

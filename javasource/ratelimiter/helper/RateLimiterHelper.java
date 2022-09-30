@@ -10,22 +10,60 @@ import com.mendix.logging.ILogNode;
 public class RateLimiterHelper {
 	
 	//to support multiple ratelimiters
-	public static RateLimiter getLimiter(java.math.BigDecimal limitSize) {
-		if(limitSize == null)
+	public static RateLimiter RateLimiter (java.math.BigDecimal limitSize, String ratelimitQueueName) {
+		RateLimiterHelper.log.trace("Current RateLimiterMap:"+RateLimiterMap);
+		
+		//default if nothing is provided
+		if(limitSize == null && ratelimitQueueName == null) {
+			log.debug("Default limit:"+ratelimiter.proxies.constants.Constants.getRateLimit());
 			return rateLimiter;
-		if( RateLimiterMap.containsKey(limitSize.doubleValue()) )
-			return RateLimiterMap.get(limitSize.doubleValue());
-		else
-			RateLimiterMap.put(limitSize.doubleValue(), RateLimiter.create(limitSize.doubleValue()));
-			return RateLimiterMap.get(limitSize.doubleValue());
-	}
-	
-	public static RateLimiter getLimiter() {
+		}
+		
+		//if limit + queue available? combi as key
+		if(ratelimitQueueName != null && limitSize != null) {
+			String key = ratelimitQueueName+limitSize.toString();
+			log.debug("Custom limit:"+limitSize + " for queue"+ratelimitQueueName);
+			if ( RateLimiterMap.containsKey(key)) {
+				return RateLimiterMap.get(key);
+			}
+			else {
+				RateLimiterMap.put(key, RateLimiter.create(limitSize.doubleValue()));
+				return RateLimiterMap.get(key);
+			}
+		}
+		
+		//limitSize as key
+		if(ratelimitQueueName == null && limitSize != null) {
+			log.debug("Custom limit:"+limitSize + " without queue");
+			String key = limitSize.toString();
+			if ( RateLimiterMap.containsKey(key)) {
+				return RateLimiterMap.get(key);
+			}
+			else {
+				RateLimiterMap.put(key, RateLimiter.create(limitSize.doubleValue()));
+				return RateLimiterMap.get(key);
+			}
+		}
+		
+		//ratelimitQueueName as key
+		if(ratelimitQueueName != null && limitSize == null) {
+			log.debug("Default limit:"+ratelimiter.proxies.constants.Constants.getRateLimit() + " for queue"+ratelimitQueueName);
+			String key = ratelimitQueueName;
+			if ( RateLimiterMap.containsKey(key)) {
+				return RateLimiterMap.get(key);
+			}
+			else {
+				RateLimiterMap.put(key, rateLimiter);
+				return RateLimiterMap.get(key);
+			}
+		}
+		
+		
 		return rateLimiter;
 	}
 
 	public static ILogNode log = Core.getLogger(ratelimiter.proxies.constants.Constants.getLognode());
-	private static RateLimiter rateLimiter = RateLimiter.create(ratelimiter.proxies.constants.Constants.getRateLimit());
-	private static Map<Double, RateLimiter> RateLimiterMap = new ConcurrentHashMap<>();
+	private static RateLimiter rateLimiter = RateLimiter.create(ratelimiter.proxies.constants.Constants.getRateLimit().doubleValue());
+	private static Map<String, RateLimiter> RateLimiterMap = new ConcurrentHashMap<>();
 
 }

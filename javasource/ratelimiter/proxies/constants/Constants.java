@@ -16,10 +16,10 @@ public class Constants
 	}
 
 	/**
-	* per second rate limit
+	* per second rate limit, default is 1 = 60/min, 0.5 = 30/min
 	*/
-	public static java.lang.Long getRateLimit()
+	public static java.math.BigDecimal getRateLimit()
 	{
-		return (java.lang.Long)Core.getConfiguration().getConstantValue("RateLimiter.RateLimit");
+		return (java.math.BigDecimal)Core.getConfiguration().getConstantValue("RateLimiter.RateLimit");
 	}
 }
